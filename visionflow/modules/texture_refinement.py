@@ -73,11 +73,13 @@ class TextureRefiner:
         Returns:
             Image with grain texture
         """
+        GRAIN_SCALE_FACTOR = 30  # Noise scaling constant
+        
         img_array = np.array(image).astype(float)
         height, width = img_array.shape[:2]
         
         # Generate noise
-        noise = np.random.normal(0, intensity * 30, (height, width))
+        noise = np.random.normal(0, intensity * GRAIN_SCALE_FACTOR, (height, width))
         
         # Blur noise for grain size
         if size > 1.0:

@@ -83,7 +83,7 @@ class ImageImporter:
         """Extract EXIF metadata from image."""
         exif_data = {}
         try:
-            exif = image._getexif()
+            exif = image.getexif()
             if exif:
                 for tag_id, value in exif.items():
                     tag = TAGS.get(tag_id, tag_id)

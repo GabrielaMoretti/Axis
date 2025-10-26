@@ -56,22 +56,16 @@ class FocusDepthController:
         
         # Create blur map based on distance from focus point
         blur_map = np.clip((normalized_distances - focus_range) / (1.0 - focus_range), 0, 1)
-        blur_map = blur_map * max_blur
         
-        # Apply variable blur
-        img_array = np.array(image)
-        result = np.zeros_like(img_array)
+        # Apply variable blur - vectorized approach
+        img_array = np.array(image).astype(float)
+        blurred = np.array(image.filter(ImageFilter.GaussianBlur(radius=max_blur))).astype(float)
         
-        # Simple approximation: blend between sharp and blurred versions
-        blurred = np.array(image.filter(ImageFilter.GaussianBlur(radius=max_blur)))
+        # Blend sharp and blurred images based on blur map
+        blur_weight = blur_map[:, :, np.newaxis]  # Add channel dimension
+        result = img_array * (1 - blur_weight) + blurred * blur_weight
         
-        for i in range(3):  # RGB channels
-            for y in range(height):
-                for x in range(width):
-                    blur_amount = blur_map[y, x] / max_blur
-                    result[y, x, i] = img_array[y, x, i] * (1 - blur_amount) + blurred[y, x, i] * blur_amount
-        
-        return Image.fromarray(result.astype(np.uint8))
+        return Image.fromarray(np.clip(result, 0, 255).astype(np.uint8))
     
     @staticmethod
     def apply_radial_blur(image: Image.Image, center: Optional[Tuple[int, int]] = None,
